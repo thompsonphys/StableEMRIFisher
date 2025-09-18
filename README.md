@@ -54,8 +54,8 @@ pip install -e ".[cuda12x]"
 
 **StableEMRIFisher with the LISA response**
 
-- First install `lisaanalysistools` by following the instructions [here](https://github.com/mikekatz04/lisa-on-gpu.git). If using GPUs, install from source.
-- Second install `fastlisaresponse` by following the instructions [here](https://github.com/mikekatz04/LISAanalysistools.git). If using GPUs, install from source.
+- First install `lisaanalysistools` by following the instructions [here](https://github.com/mikekatz04/LISAanalysistools.git). If using GPUs, install from source.
+- Second install `fastlisaresponse` by following the instructions [here](https://github.com/mikekatz04/lisa-on-gpu.git). If using GPUs, install from source.
 
 ## Documentation
 
