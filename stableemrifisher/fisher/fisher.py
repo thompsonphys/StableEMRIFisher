@@ -475,7 +475,6 @@ class StableEMRIFisher:
 
         # optional custom delta grids per parameter
         if delta_range is None:
-            live_dangerously = True
             self.delta_range = {}
         else:
             self.delta_range = delta_range
