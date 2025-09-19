@@ -185,6 +185,25 @@ class StableEMRIFisher:
             )
             ResponseWrapper_kwargs.pop("waveform_gen")
 
+        # ================== Initialize waveform model ==================
+        waveform_generator = waveform_generator(
+            waveform_class=waveform_class,
+            **waveform_generator_kwargs,
+        )
+        # This is the waveform generator without response to generate waveforms.
+        self.waveform_generator_kwargs = waveform_generator_kwargs
+
+        # trajectory module and function for plunge checks
+        self.traj_module = waveform_generator.waveform_generator.inspiral_generator
+        self.traj_module_func = waveform_generator.waveform_generator.inspiral_kwargs[
+            "func"
+        ]
+
+        if waveform_generator.waveform_generator.__class__.__name__ == "Pn5AAKWaveform" and deriv_type == "stable":
+            logger.warning("5PNAAK waveform model is incompatible " \
+            "with deriv_type 'stable'. Switching to deriv_type 'direct'.")
+            deriv_type = "direct"
+
         # ================== Initialize StableEMRIDerivatives ==================
         self.deriv_type = deriv_type
         if self.deriv_type == "stable":
@@ -201,20 +220,6 @@ class StableEMRIFisher:
             self.waveform_derivative_kwargs = {"use_gpu": self.use_gpu}
         else:
             raise ValueError("deriv_type must be 'stable' or 'direct'.")
-
-        # ================== Initialize waveform model ==================
-        waveform_generator = waveform_generator(
-            waveform_class=waveform_class,
-            **waveform_generator_kwargs,
-        )
-        # This is the waveform generator without response to generate waveforms.
-        self.waveform_generator_kwargs = waveform_generator_kwargs
-
-        # trajectory module and function for plunge checks
-        self.traj_module = waveform_generator.waveform_generator.inspiral_generator
-        self.traj_module_func = waveform_generator.waveform_generator.inspiral_kwargs[
-            "func"
-        ]
 
         # ================ Initialize ResponseWrapper if provided ==================
         if ResponseWrapper is not None:
@@ -519,9 +524,39 @@ class StableEMRIFisher:
                 param_names = [
                     "m1",
                     "m2",
+                    "p0",
+                    "e0",
+                    "dist",
+                    "qS",
+                    "phiS",
+                    "qK",
+                    "phiK",
+                    "Phi_phi0",
+                    "Phi_r0",
+                ]
+            elif EMRI_ORBIT == "eccentric inclined" and BACKGROUND == "Kerr":
+                param_names = [
+                    "m1",
+                    "m2",
                     "a",
                     "p0",
                     "e0",
+                    "xI0",
+                    "dist",
+                    "qS",
+                    "phiS",
+                    "qK",
+                    "phiK",
+                    "Phi_phi0",
+                    "Phi_r0",
+                ]
+            elif EMRI_ORBIT == "eccentric inclined" and BACKGROUND == "Schwarzschild":
+                param_names = [
+                    "m1",
+                    "m2",
+                    "p0",
+                    "e0",
+                    "xI0",
                     "dist",
                     "qS",
                     "phiS",
