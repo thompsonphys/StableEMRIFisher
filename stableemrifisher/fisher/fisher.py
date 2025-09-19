@@ -483,12 +483,23 @@ class StableEMRIFisher:
         self.wave_params = wave_params
         # initialize parameter name list
         if param_names is None:
-            EMRI_ORBIT = (
-                self.waveform_generator.waveform_gen.waveform_generator.descriptor
-            )
-            BACKGROUND = (
-                self.waveform_generator.waveform_gen.waveform_generator.background
-            )
+            if self.has_ResponseWrapper:
+                EMRI_ORBIT = (
+                    self.waveform_generator.waveform_gen.waveform_generator.descriptor
+                )
+                BACKGROUND = (
+                    self.waveform_generator.waveform_gen.waveform_generator.background
+                )
+            else:
+                EMRI_ORBIT = (
+                    self.waveform_generator.waveform_generator.descriptor
+                )
+                BACKGROUND = (
+                    self.waveform_generator.waveform_generator.background
+                )
+
+            print("EMRI_ORBIT: ", EMRI_ORBIT, "BACKGROUND: ", BACKGROUND)
+
             if EMRI_ORBIT == "eccentric equatorial" and BACKGROUND == "Kerr":
                 param_names = [
                     "m1",
