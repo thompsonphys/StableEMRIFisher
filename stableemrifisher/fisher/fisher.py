@@ -366,6 +366,7 @@ class StableEMRIFisher:
         param_names: Optional[List[str]] = None,
         deltas: Optional[Dict[str, float]] = None,
         der_order: Optional[int] = None,
+        kind: Optional[str] = None,
         Ndelta: Optional[int] = None,
         delta_range: Optional[Dict[str, List[float]]] = None,
         CovEllipse: Optional[bool] = None,
@@ -387,6 +388,7 @@ class StableEMRIFisher:
             4) Optionally compute the covariance matrix and generate plots.
 
         Args:
+            TODO: update.
             m1: Primary mass (solar masses).
             m2: Secondary mass (solar masses).
             a: Spin parameter [0, 1).
@@ -411,6 +413,7 @@ class StableEMRIFisher:
             param_names: Ordered parameter names for derivatives.
             deltas: Optional fixed step sizes for derivatives.
             der_order: Finite-difference order for derivatives.
+            kind: kind of the derivative. Can be 'central', 'forward', 'backward'.
             Ndelta: Number of trial deltas in stability search.
             delta_range: Custom per-parameter delta grids.
             CovEllipse: If True, compute covariance and plots.
@@ -442,6 +445,7 @@ class StableEMRIFisher:
         # Use defaults from __init__ but allow per-call overrides
         self.order = der_order if der_order is not None else self.order
         self.Ndelta = Ndelta if Ndelta is not None else self.Ndelta
+        self.kind = kind if kind is not None else "central"
         self.window = window  # Always set per-call
         self.fmin = fmin  # Always set per-call
         self.fmax = fmax  # Always set per-call
@@ -727,6 +731,8 @@ class StableEMRIFisher:
         # create copies equivalent to the number of channels.
         if not self.has_ResponseWrapper:
             self.waveform = xp.asarray([self.waveform.real, -self.waveform.imag])
+
+        print("waveform shape: ", self.waveform.shape)
         ### HEREAFTER, THE WAVEFORM HAS SHAPE (NCHANNELS, N) ###
 
         logger.debug("wave ndim: %s", self.waveform.ndim)
@@ -861,7 +867,7 @@ class StableEMRIFisher:
                     else:
                         kind = "central"
                 else:
-                    kind = "central"
+                    kind = self.kind
 
                 if param_name == "dist":
                     del_k = xp.asarray(
@@ -946,10 +952,11 @@ class StableEMRIFisher:
                             **self.waveform_derivative_kwargs,
                         )
                     )
+
                     if len(delta_init) == 1:
                         relerr_flag = True
 
-                if not self.has_ResponseWrapper:
+                if del_k.ndim == 1:
                     # If the derivative is 1D
                     del_k = xp.asarray([del_k.real, -del_k.imag])
 
@@ -1109,7 +1116,7 @@ class StableEMRIFisher:
                 else:
                     kind = "central"
             else:
-                kind = "central"
+                kind = self.kind
 
             if (
                 (param_name in ["qS", "phiS", "qK", "phiK"])
@@ -1158,7 +1165,7 @@ class StableEMRIFisher:
                     )
                 )
 
-            if not self.has_ResponseWrapper:
+            if dtv_i.ndim == 1:
                 # If the derivative is 1D
                 dtv_i = xp.asarray([dtv_i.real, -dtv_i.imag])
 
