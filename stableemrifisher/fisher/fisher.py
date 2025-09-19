@@ -865,7 +865,7 @@ class StableEMRIFisher:
                     elif self.wave_params[param_name] > self.minmax[param_name][1]:
                         kind = "backward"
                     else:
-                        kind = "central"
+                        kind = self.kind
                 else:
                     kind = self.kind
 
@@ -1114,7 +1114,7 @@ class StableEMRIFisher:
                 elif self.wave_params[param_name] > self.minmax[param_name][1]:
                     kind = "backward"
                 else:
-                    kind = "central"
+                    kind = self.kind
             else:
                 kind = self.kind
 
