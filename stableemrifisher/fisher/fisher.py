@@ -359,7 +359,6 @@ class StableEMRIFisher:
         wave_params: Dict[str, float],
         add_param_args: Optional[Dict[str, Any]] = None,
         waveform_kwargs: Optional[Dict[str, Any]] = None,
-        fisher_kwargs: Optional[Dict[str, Any]] = None,
         window: Optional[Union[np.ndarray, Any]] = None,
         fmin: Optional[float] = None,
         fmax: Optional[float] = None,
