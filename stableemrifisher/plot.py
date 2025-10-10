@@ -62,6 +62,12 @@ def CovEllipsePlot(
     if fig == None:
         fig, axs = plt.subplots(len(covariance), len(covariance), figsize=(20, 20))
 
+    if "n_std" in ellipse_kwargs:
+        n_std = ellipse_kwargs["n_std"]
+    else:
+        n_std = 2.0
+        ellipse_kwargs["n_std"] = n_std
+
     # first param index
     for i in range(len(covariance)):
         # second param index
@@ -89,14 +95,14 @@ def CovEllipsePlot(
 
                 axs[j, i].set_xlim(
                     [
-                        mean[0] - 2.5 * np.sqrt(covariance[i][i]),
-                        mean[0] + 2.5 * np.sqrt(covariance[i][i]),
+                        mean[0] - n_std * np.sqrt(covariance[i][i]),
+                        mean[0] + n_std * np.sqrt(covariance[i][i]),
                     ]
                 )
                 axs[j, i].set_ylim(
                     [
-                        mean[1] - 2.5 * np.sqrt(covariance[j][j]),
-                        mean[1] + 2.5 * np.sqrt(covariance[j][j]),
+                        mean[1] - n_std * np.sqrt(covariance[j][j]),
+                        mean[1] + n_std * np.sqrt(covariance[j][j]),
                     ]
                 )
 
@@ -113,14 +119,14 @@ def CovEllipsePlot(
 
                 var = covariance[i][i]
 
-                x = np.linspace(mean - 3 * np.sqrt(var), mean + 3 * np.sqrt(var))
+                x = np.linspace(mean - n_std * np.sqrt(var), mean + n_std * np.sqrt(var))
 
                 axs[j, i].plot(x, normal(mean, var, x), **line_kwargs)
 
                 axs[j, i].set_xlim(
                     [
-                        mean - 2.5 * np.sqrt(covariance[i][i]),
-                        mean + 2.5 * np.sqrt(covariance[i][i]),
+                        mean - n_std * np.sqrt(covariance[i][i]),
+                        mean + n_std * np.sqrt(covariance[i][i]),
                     ]
                 )
 
