@@ -44,6 +44,15 @@ def tukey(N, alpha=0.5, use_gpu=False):
     )
     return window
 
+#apply a moving average
+def moving_average(
+    x, 
+    N=10
+):
+    n_bins = x.shape[-1] // N
+    trimmed_x = x[..., :n_bins*N] #length only upto n_bins * N
+    return np.exp(np.log(x[..., :n_bins * N].reshape(*trimmed_x.shape[:-1],n_bins, N)).mean(axis=-1)) #geometric averaging
+
 
 def generate_PSD(
     waveform,
@@ -107,7 +116,7 @@ def generate_PSD(
     # PSD_funcs = PSD_cp[0:len(PSD_cp)] # Choose which channels to include
 
 
-def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=False):
+def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, ma = None, use_gpu=False):
     """
     Compute the frequency domain inner product of two time-domain arrays.
 
@@ -123,6 +132,7 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=Fals
         window (np.ndarray, optional): a window array to envelope the waveform time series. Default is None (no window).
         fmin (float, optional): minimum frequency for inner_product sum. Default is None.
         fmax (float, optional): maximum frequency for inner_product sum. Default is None.
+        ma (int, optional): moving average bin size to apply to PSD before computing inner product. Default is None (no moving average).
         use_gpu (bool, optional): whether to use gpu. Default is False.
     Returns:
         float: The frequency-domain inner product of the two signals.
@@ -190,6 +200,15 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=Fals
         b_fft_plus = (dt * xp.fft.rfft(b_in.real, axis=-1)[:, 1:])[:, freq_mask]
         b_fft_cross = (dt * xp.fft.rfft(b_in.imag, axis=-1)[:, 1:])[:, freq_mask]
 
+        #apply moving average to PSD if requested
+        if ma is not None:
+            assert ma > 1, "ma should be an integer greater than 1"
+            PSD = moving_average(PSD, N=int(ma))
+            a_fft_plus = moving_average(a_fft_plus, N=int(ma))
+            a_fft_cross = moving_average(a_fft_cross, N=int(ma))
+            b_fft_plus = moving_average(b_fft_plus, N=int(ma))
+            b_fft_cross = moving_average(b_fft_cross, N=int(ma))
+
         inner_prod = (
             4
             * df
@@ -203,6 +222,12 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=Fals
         a_fft = (dt * xp.fft.rfft(a_in, axis=-1)[:, 1:])[:, freq_mask]
         b_fft = (dt * xp.fft.rfft(b_in, axis=-1)[:, 1:])[:, freq_mask]
 
+        if ma is not None:
+            assert ma > 1, "ma should be an integer greater than 1"
+            PSD = moving_average(PSD, N=int(ma))
+            a_fft = moving_average(a_fft, N=int(ma))
+            b_fft = moving_average(b_fft, N=int(ma))
+
         # Compute inner products over given channels
         inner_prod = 4 * df * ((a_fft.conj() * b_fft).real / PSD[:, freq_mask]).sum()
 
@@ -212,7 +237,7 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=Fals
     return inner_prod
 
 
-def SNRcalc(waveform, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=False):
+def SNRcalc(waveform, PSD, dt, window=None, fmin=None, fmax=None, ma=None, use_gpu=False):
     """
     Give the SNR of a given waveform after SEF initialization.
     Returns:
@@ -228,6 +253,7 @@ def SNRcalc(waveform, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=False)
             window=window,
             fmin=fmin,
             fmax=fmax,
+            ma=ma,
             use_gpu=use_gpu,
         )
     )
