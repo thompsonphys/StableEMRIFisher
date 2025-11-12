@@ -362,7 +362,6 @@ class StableEMRIFisher:
         window: Optional[Union[np.ndarray, Any]] = None,
         fmin: Optional[float] = None,
         fmax: Optional[float] = None,
-        ma: Optional[int] = None,
         param_names: Optional[List[str]] = None,
         deltas: Optional[Dict[str, float]] = None,
         der_order: Optional[int] = None,
@@ -410,7 +409,6 @@ class StableEMRIFisher:
             window: Optional window to apply on the waveform.
             fmin: Minimum frequency for inner products.
             fmax: Maximum frequency for inner products.
-            ma: Moving average bin size to apply to PSD before inner products.
             param_names: Ordered parameter names for derivatives.
             deltas: Optional fixed step sizes for derivatives.
             der_order: Finite-difference order for derivatives.
@@ -450,7 +448,6 @@ class StableEMRIFisher:
         self.window = window  # Always set per-call
         self.fmin = fmin  # Always set per-call
         self.fmax = fmax  # Always set per-call
-        self.ma = ma #Always set per-call
         self.CovEllipse = CovEllipse if CovEllipse is not None else self.CovEllipse
         self.stability_plot = (
             stability_plot if stability_plot is not None else self.stability_plot
@@ -700,7 +697,6 @@ class StableEMRIFisher:
         window=None,
         fmin=None,
         fmax=None,
-        ma=None,
         use_gpu=False,
         **waveform_kwargs,
     ):
@@ -759,7 +755,6 @@ class StableEMRIFisher:
             window=window,
             fmin=fmin,
             fmax=fmax,
-            ma=ma,
             use_gpu=use_gpu,
         )
 
@@ -973,7 +968,6 @@ class StableEMRIFisher:
                     window=self.window,
                     fmin=self.fmin,
                     fmax=self.fmax,
-                    ma=self.ma,
                     use_gpu=self.use_gpu,
                 )
                 logger.debug("Gamma_ii for %s: %s", param_name, Gammai)
@@ -1205,7 +1199,6 @@ class StableEMRIFisher:
                                 window=self.window,
                                 fmin=self.fmin,
                                 fmax=self.fmax,
-                                ma=self.ma,
                                 use_gpu=self.use_gpu,
                             ).real
                         )
@@ -1221,7 +1214,6 @@ class StableEMRIFisher:
                                 window=self.window,
                                 fmin=self.fmin,
                                 fmax=self.fmax,
-                                ma=self.ma,
                                 use_gpu=self.use_gpu,
                             ).real
                         )
