@@ -200,6 +200,8 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, ma = None, u
         b_fft_plus = (dt * xp.fft.rfft(b_in.real, axis=-1)[:, 1:])[:, freq_mask]
         b_fft_cross = (dt * xp.fft.rfft(b_in.imag, axis=-1)[:, 1:])[:, freq_mask]
 
+        PSD = PSD[:, freq_mask]
+
         #apply moving average to PSD if requested
         if ma is not None:
             assert ma > 1, "ma should be an integer greater than 1"
@@ -214,13 +216,14 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, ma = None, u
             * df
             * (
                 (a_fft_plus.conj() * b_fft_plus + a_fft_cross * b_fft_cross.conj()).real
-                / PSD[:, freq_mask]
+                / PSD
             ).sum()
         )
 
     else:
         a_fft = (dt * xp.fft.rfft(a_in, axis=-1)[:, 1:])[:, freq_mask]
         b_fft = (dt * xp.fft.rfft(b_in, axis=-1)[:, 1:])[:, freq_mask]
+        PSD = PSD[:, freq_mask]
 
         if ma is not None:
             assert ma > 1, "ma should be an integer greater than 1"
@@ -229,7 +232,7 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, ma = None, u
             b_fft = moving_average(b_fft, N=int(ma))
 
         # Compute inner products over given channels
-        inner_prod = 4 * df * ((a_fft.conj() * b_fft).real / PSD[:, freq_mask]).sum()
+        inner_prod = 4 * df * ((a_fft.conj() * b_fft).real / PSD).sum()
 
     if use_gpu:
         inner_prod = inner_prod.get()
