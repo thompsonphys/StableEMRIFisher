@@ -1231,12 +1231,7 @@ class StableEMRIFisher:
             Fisher[degen_index, degen_index] = 1.0
 
         # Check for positive-definiteness
-        if "m1" in self.param_names:
-            Fisher_inv = np.linalg.inv(Fisher)
-        else:
-            Fisher_inv = np.linalg.inv(Fisher)
-
-        if (np.linalg.eigvals(Fisher_inv) < 0.0).any():
+        if (np.linalg.eigvals(Fisher) < 0.0).any():
             logger.critical(
                 "Calculated Fisher is not positive "
                 "semi-definite. "
