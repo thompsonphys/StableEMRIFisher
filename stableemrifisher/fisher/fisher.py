@@ -506,7 +506,7 @@ class StableEMRIFisher:
                     self.waveform_generator.waveform_generator.background
                 )
 
-            print("EMRI_ORBIT: ", EMRI_ORBIT, "BACKGROUND: ", BACKGROUND)
+            logger.info("EMRI_ORBIT: ", EMRI_ORBIT, "BACKGROUND: ", BACKGROUND)
 
             if EMRI_ORBIT == "eccentric equatorial" and BACKGROUND == "Kerr":
                 param_names = [
@@ -731,7 +731,7 @@ class StableEMRIFisher:
         if not self.has_ResponseWrapper:
             self.waveform = xp.asarray([self.waveform.real, -self.waveform.imag])
 
-        print("waveform shape: ", self.waveform.shape)
+        logger.info("waveform shape: ", self.waveform.shape)
         ### HEREAFTER, THE WAVEFORM HAS SHAPE (NCHANNELS, N) ###
 
         logger.debug("wave ndim: %s", self.waveform.ndim)
