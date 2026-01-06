@@ -731,7 +731,7 @@ class StableEMRIFisher:
         if not self.has_ResponseWrapper:
             self.waveform = xp.asarray([self.waveform.real, -self.waveform.imag])
 
-        logger.info("waveform shape: ", self.waveform.shape)
+        logger.info("waveform shape: %s", self.waveform.shape)
         ### HEREAFTER, THE WAVEFORM HAS SHAPE (NCHANNELS, N) ###
 
         logger.debug("wave ndim: %s", self.waveform.ndim)

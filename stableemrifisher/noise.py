@@ -23,7 +23,7 @@ import numpy as np
 import os
 
 
-def sensitivity_LWA(f):
+def sensitivity_LWA(f, **kwargs):
     """
     LISA sensitivity function in the long-wavelength approximation (https://arxiv.org/pdf/1803.01944.pdf).
 
