@@ -105,19 +105,19 @@ We welcome contributions! Please:
 
 ## Citation
 
-If you use StableEMRIFisher in your research, please cite:
+If you use StableEMRIFisher in your research, please cite it using the metadata in our `CITATION.cff` file.
+
+You can easily copy the citation in APA or BibTeX format by clicking the **"Cite this repository"** button in the right sidebar of this GitHub page. Alternatively, you can use the following BibTeX entry:
 
 ```bibtex
-@software{kejriwal_2024_sef,
-  author       = {Shubham Kejriwal and
-                  Ollie Burke and
-                  Christian Chapman-Bird and
-                  Alvin J. K. Chua
-                  },
-  title        = {StableEMRIFisher (SEF)},
-  publisher    = {Github},
-  year         = "manuscript in preparation",
-  url          = {https://github.com/perturber/StableEMRIFisher}
+@software{Kejriwal_StableEMRIFisher_2026,
+  author       = {Kejriwal, Shubham and Burke, Ollie and Chapman-Bird, Christian and J. K. Chua, Alvin},
+  title        = {StableEMRIFisher},
+  version      = {2.0.0},
+  year         = {2026},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.18778938},
+  url          = {[https://github.com/perturber/StableEMRIFisher](https://github.com/perturber/StableEMRIFisher)}
 }
 ```
 
