@@ -74,7 +74,7 @@ def generate_PSD(
         xp = np
 
     # Extract fourier frequencies
-    length = len(waveform[0])
+    length = waveform.shape[-1]
     freq = xp.fft.rfftfreq(length) / dt
     df = 1 / (length * dt)
 
