@@ -107,7 +107,7 @@ def generate_PSD(
     # PSD_funcs = PSD_cp[0:len(PSD_cp)] # Choose which channels to include
 
 
-def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=False):
+def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, freq_mask=None, use_gpu=False):
     """
     Compute the frequency domain inner product of two time-domain arrays.
 
@@ -123,65 +123,46 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=Fals
         window (np.ndarray, optional): a window array to envelope the waveform time series. Default is None (no window).
         fmin (float, optional): minimum frequency for inner_product sum. Default is None.
         fmax (float, optional): maximum frequency for inner_product sum. Default is None.
+        freq_mask (np.ndarray, optional): Precomputed boolean mask for frequencies.
         use_gpu (bool, optional): whether to use gpu. Default is False.
     Returns:
         float: The frequency-domain inner product of the two signals.
 
     """
-    if use_gpu:
-        xp = cp
-    else:
-        xp = np
-
-    # print("fmin: {}, fmax: {}".format(fmin, fmax))
-
-    # frequency cutoff mask
-    if (fmin != None) or (fmax != None):
-
-        length = len(a[0])
-        freq = xp.fft.rfftfreq(length) / dt
-
-        if use_gpu:
-            freq = freq.get()  # convert to numpy
-
-        if fmin != None:
-            mask_min = freq > fmin
-
-        if fmax != None:
-            mask_max = freq < fmax
-
-        if (fmin != None) and (fmax == None):
-            freq_mask = mask_min
-        elif (fmin == None) and (fmax != None):
-            freq_mask = mask_max
-        else:
-            freq_mask = xp.logical_and(mask_min, mask_max)
-
-    else:
-        length = len(a[0])
-        
-        freq = xp.fft.rfftfreq(length) / dt
-
-        freq_mask = np.full(len(freq), True, dtype=bool)
-
-    freq_mask = freq_mask[1:]  # skip the first element corresponding to f = 0.0
+    xp = cp if use_gpu else np
 
     a = xp.atleast_2d(a)
     b = xp.atleast_2d(b)
-    PSD = xp.atleast_2d(
-        xp.asarray(PSD)
-    )  # handle passing the same PSD for multiple channels
-
+    PSD = xp.atleast_2d(xp.asarray(PSD))
     N = a.shape[1]
-
     df = (N * dt) ** -1
 
+    # 1. Freqnuency masking
+    if freq_mask is None:
+        freq = xp.fft.rfftfreq(N)/dt
+        if not use_gpu:
+            pass
+        elif use_gpu and hasattr(freq, 'get'):
+            freq = freq.get()
+
+        freq_mask = np.full(len(freq), True, dtype=bool)
+        if fmin is not None:
+            freq_mask &= (freq > fmin)
+        if fmax is not None:
+            freq_mask &= (freq < fmax)
+        freq_mask = freq_mask[1:] #skip f = 0
+    else:
+        # Assume the f = 0 component is already stripped.
+        pass
+
+    # 2. Windowing & Template FFT
     if window is not None:
         window = xp.atleast_2d(xp.asarray(window))
         a_in = a * window
         b_in = b * window
     else:
-        a_in, b_in = a, b
+        a_in = a
+        b_in = b
 
     if xp.iscomplexobj(a_in):
         a_fft_plus = (dt * xp.fft.rfft(a_in.real, axis=-1)[:, 1:])[:, freq_mask]
@@ -212,7 +193,7 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=Fals
     return inner_prod
 
 
-def SNRcalc(waveform, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=False):
+def SNRcalc(waveform, PSD, dt, window=None, fmin=None, fmax=None, freq_mask=None, use_gpu=False):
     """
     Give the SNR of a given waveform after SEF initialization.
     Returns:
@@ -228,6 +209,7 @@ def SNRcalc(waveform, PSD, dt, window=None, fmin=None, fmax=None, use_gpu=False)
             window=window,
             fmin=fmin,
             fmax=fmax,
+            freq_mask=freq_mask,
             use_gpu=use_gpu,
         )
     )

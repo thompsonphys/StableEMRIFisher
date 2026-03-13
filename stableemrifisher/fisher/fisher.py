@@ -350,6 +350,7 @@ class StableEMRIFisher:
         self.window = None
         self.fmin = None
         self.fmax = None
+        self.freq_mask = None
         self.filename = filename
         self.suffix = None
         # self.filename = filename   # Always set per-call
@@ -362,6 +363,7 @@ class StableEMRIFisher:
         window: Optional[Union[np.ndarray, Any]] = None,
         fmin: Optional[float] = None,
         fmax: Optional[float] = None,
+        freq_mask: Optional[np.ndarray] = None,
         param_names: Optional[List[str]] = None,
         deltas: Optional[Dict[str, float]] = None,
         der_order: Optional[int] = None,
@@ -409,6 +411,7 @@ class StableEMRIFisher:
             window: Optional window to apply on the waveform.
             fmin: Minimum frequency for inner products.
             fmax: Maximum frequency for inner products.
+            freq_mask: np.ndarray of frequency masks.
             param_names: Ordered parameter names for derivatives.
             deltas: Optional fixed step sizes for derivatives.
             der_order: Finite-difference order for derivatives.
@@ -448,6 +451,12 @@ class StableEMRIFisher:
         self.window = window  # Always set per-call
         self.fmin = fmin  # Always set per-call
         self.fmax = fmax  # Always set per-call
+        self.freq_mask = freq_mask
+        if self.freq_mask is not None:
+            # custom freq_mask overrides fmin and fmax.
+            self.fmin = None
+            self.fmax = None
+
         self.CovEllipse = CovEllipse if CovEllipse is not None else self.CovEllipse
         self.stability_plot = (
             stability_plot if stability_plot is not None else self.stability_plot
@@ -592,6 +601,7 @@ class StableEMRIFisher:
         rho = self.SNRcalc_SEF(
             fmin=self.fmin,
             fmax=self.fmax,
+            freq_mask=self.freq_mask,
             window=self.window,
             use_gpu=self.use_gpu,
             *self.wave_params_list,
@@ -968,6 +978,7 @@ class StableEMRIFisher:
                     window=self.window,
                     fmin=self.fmin,
                     fmax=self.fmax,
+                    freq_mask=self.freq_mask,
                     use_gpu=self.use_gpu,
                 )
                 logger.debug("Gamma_ii for %s: %s", param_name, Gammai)
@@ -1199,6 +1210,7 @@ class StableEMRIFisher:
                                 window=self.window,
                                 fmin=self.fmin,
                                 fmax=self.fmax,
+                                freq_mask=self.freq_mask,
                                 use_gpu=self.use_gpu,
                             ).real
                         )
@@ -1214,6 +1226,7 @@ class StableEMRIFisher:
                                 window=self.window,
                                 fmin=self.fmin,
                                 fmax=self.fmax,
+                                freq_mask=self.freq_mask,
                                 use_gpu=self.use_gpu,
                             ).real
                         )
