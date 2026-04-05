@@ -23,7 +23,7 @@ import numpy as np
 import os
 
 
-def sensitivity_LWA(f, **kwargs):
+def sensitivity_LWA(f, galactic_confusion=False, **kwargs):
     """
     LISA sensitivity function in the long-wavelength approximation (https://arxiv.org/pdf/1803.01944.pdf).
 
@@ -51,15 +51,21 @@ def sensitivity_LWA(f, **kwargs):
     # log10_Sc = (np.log10(9)-45) -7/3*np.log10(f) -(f*alpha + beta*f*np.sin(kappa*f))*np.log10(np.e) + np.log10(1 + np.tanh(gamma*(fk-f))) #Hz-1
 
     A = 9e-45
-    Sc = (
-        A
-        * f ** (-7 / 3)
-        * np.exp(-(f**alpha) + beta * f * np.sin(kappa * f))
-        * (1 + np.tanh(gamma * (fk - f)))
-    )
+
     sensitivity = (10 / (3 * L**2)) * (
-        P_OMS + 4 * (P_acc) / ((2 * np.pi * f) ** 4)
-    ) * (1 + 6 * f**2 / (10 * fstar**2)) + Sc
+            P_OMS + 4 * (P_acc) / ((2 * np.pi * f) ** 4)
+        ) * (1 + 6 * f**2 / (10 * fstar**2))
+    
+    if galactic_confusion:
+        Sc = (
+            A
+            * f ** (-7 / 3)
+            * np.exp(-(f**alpha) + beta * f * np.sin(kappa * f))
+            * (1 + np.tanh(gamma * (fk - f)))
+        )
+
+        return sensitivity + Sc
+
     return sensitivity
 
 
