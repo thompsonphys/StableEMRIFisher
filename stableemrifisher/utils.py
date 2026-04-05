@@ -107,7 +107,17 @@ def generate_PSD(
     # PSD_funcs = PSD_cp[0:len(PSD_cp)] # Choose which channels to include
 
 
-def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, freq_mask=None, use_gpu=False):
+def inner_product(
+        a, 
+        b, 
+        PSD, 
+        dt, 
+        window=None, 
+        fmin=None, 
+        fmax=None, 
+        freq_mask=None, 
+        normalize=False,
+        use_gpu=False):
     """
     Compute the frequency domain inner product of two time-domain arrays.
 
@@ -124,6 +134,7 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, freq_mask=No
         fmin (float, optional): minimum frequency for inner_product sum. Default is None.
         fmax (float, optional): maximum frequency for inner_product sum. Default is None.
         freq_mask (np.ndarray, optional): Precomputed boolean mask for frequencies.
+        normalize (bool, optional): whether to normalize by sqrt{(a|a)(b|b)}
         use_gpu (bool, optional): whether to use gpu. Default is False.
     Returns:
         float: The frequency-domain inner product of the two signals.
@@ -189,6 +200,11 @@ def inner_product(a, b, PSD, dt, window=None, fmin=None, fmax=None, freq_mask=No
 
     if use_gpu:
         inner_prod = inner_prod.get()
+
+    if normalize:
+        den1 = inner_product(a, a, PSD, dt, window, fmin, fmax, freq_mask, normalize=False, use_gpu=use_gpu)
+        den2 = inner_product(b, b, PSD, dt, window, fmin, fmax, freq_mask, normalize=False, use_gpu=use_gpu)
+        return inner_prod/np.sqrt(den1*den2)
 
     return inner_prod
 
