@@ -117,7 +117,7 @@ You can easily copy the citation in APA or BibTeX format by clicking the **"Cite
   year         = {2026},
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.18778938},
-  url          = {[https://github.com/perturber/StableEMRIFisher](https://github.com/perturber/StableEMRIFisher)}
+  note         = {GitHub repository: \url{https://github.com/perturber/StableEMRIFisher}}
 }
 ```
 
