@@ -69,6 +69,33 @@ def sensitivity_LWA(f, galactic_confusion=False, **kwargs):
     return sensitivity
 
 
+def _get_sensitivity_freqarray(freqs, sens_fn=LISASens, return_type="PSD", **kwargs):
+    """LOCAL PATCH (SEF <-> lisatools domains API).
+
+    This lisatools' ``get_sensitivity`` takes a ``DomainSettings`` object as its
+    first argument, but ``write_psd_file`` builds a raw frequency array. In the
+    frequency domain ``get_sensitivity`` reduces to
+    ``sens_fn.get_Sn(freqs, **kwargs)`` followed by the ``return_type`` transform,
+    so evaluate that directly. Grid-exact (uses the same ``freqs``) and mirrors the
+    raw-ndarray back-compat shim that newer lisatools added to ``get_sensitivity``.
+    Drop this once SEF passes ``FDSettings`` (or relies on that lisatools shim).
+    """
+    if hasattr(sens_fn, "get_Sn"):
+        sensitivity = sens_fn
+    else:
+        from lisatools.sensitivity import check_sensitivity
+
+        sensitivity = check_sensitivity(sens_fn)
+    PSD = sensitivity.get_Sn(freqs, **kwargs)
+    if return_type == "PSD":
+        return PSD
+    elif return_type == "ASD":
+        return PSD ** (1 / 2)
+    elif return_type == "char_strain":
+        return (freqs * PSD) ** (1 / 2)
+    raise ValueError(f"return_type {return_type!r} not supported.")
+
+
 def write_psd_file(
     model="scirdv1",
     channels="AET",
@@ -129,7 +156,7 @@ def write_psd_file(
     updated_kwargs = default_kwargs | kwargs
 
     Sn = [
-        get_sensitivity(freqs, sens_fn=sens_fn, model=model, **updated_kwargs)
+        _get_sensitivity_freqarray(freqs, sens_fn=sens_fn, model=model, **updated_kwargs)
         for sens_fn in sens_fns
     ]
 

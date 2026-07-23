@@ -261,6 +261,9 @@ class StableEMRIFisher:
         if noise_model is None and self.has_ResponseWrapper is True:
             logger.info("No noise model provided but response has been provided")
             logger.info("Generating and loading default PSD file")
+            # LOCAL PATCH: the PSD path below uses os.path.join(run_direc, ...);
+            # upstream concatenated `run_direc + PSD_filename` (no separator), which
+            # wrote/read the file one directory ABOVE the cwd.
             run_direc = os.getcwd()
             if ResponseWrapper_kwargs["tdi"] == "2nd generation":
                 PSD_filename = "tdi2_wo_background.npy"
@@ -272,7 +275,7 @@ class StableEMRIFisher:
                     channels="AE",
                     tdi2=True,
                     include_foreground=False,
-                    filename=run_direc + PSD_filename,
+                    filename=os.path.join(run_direc, PSD_filename),
                     **kwargs_PSD,
                 )
                 logger.info("\nTDI2 A and E with stochastic background.")
@@ -286,15 +289,15 @@ class StableEMRIFisher:
                     channels="AE",
                     tdi2=False,
                     include_foreground=False,
-                    filename=run_direc + PSD_filename,
+                    filename=os.path.join(run_direc, PSD_filename),
                     **kwargs_PSD,
                 )
                 logger.info("\nTDI1 A and E with stochastic background.")
 
             if self.use_gpu:
-                self.noise_model = load_psd_from_file(run_direc + PSD_filename, xp=cp)
+                self.noise_model = load_psd_from_file(os.path.join(run_direc, PSD_filename), xp=cp)
             else:
-                self.noise_model = load_psd_from_file(run_direc + PSD_filename, xp=np)
+                self.noise_model = load_psd_from_file(os.path.join(run_direc, PSD_filename), xp=np)
             self.noise_kwargs = {}
             self.channels = ["A", "E"]
         elif noise_model is None and self.has_ResponseWrapper is False:
