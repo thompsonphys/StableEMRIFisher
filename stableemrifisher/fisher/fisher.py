@@ -600,6 +600,8 @@ class StableEMRIFisher:
             final_time = self.check_if_plunging()
             self.T = final_time / YRSID_SI  # Years
             self.current_waveform_kwargs.update({"T": self.T})
+            if self.has_ResponseWrapper:
+                self._trim_response_duration()
 
         rho = self.SNRcalc_SEF(
             fmin=self.fmin,
@@ -807,6 +809,30 @@ class StableEMRIFisher:
             logger.info("Body is not plunging, Fisher should be stable.")
             final_time = self.T * YRSID_SI
         return final_time
+
+    def _trim_response_duration(self):
+        """Push a trimmed ``self.T`` into the ResponseWrapper time grid(s).
+
+        ``ResponseWrapper.__call__`` overrides the waveform ``T`` kwarg with its
+        own ``Tobs``, so the plunge-check trim has no effect unless the wrapper
+        (and, for stable derivatives, the derivative's wrapper) is resized:
+        truncate the TDI grid at the final signal duration.
+        """
+        wrappers = [self.waveform_generator]
+        if self.derivative is not self.waveform_generator and hasattr(
+            self.derivative, "response_model"
+        ):
+            wrappers.append(self.derivative)
+        for rw in wrappers:
+            n = int(self.T * YRSID_SI / rw.dt)
+            if n < rw.n:
+                rw.n = n
+                # half-sample offset: the waveform generator produces
+                # int(Tobs * YRSID_SI / dt) + 1 samples, so place Tobs mid-bin
+                # to get exactly n regardless of float rounding (the response
+                # kernel requires the input length to equal num_pts).
+                rw.Tobs = (n - 0.5) * rw.dt / YRSID_SI
+                rw.response_model.num_pts = n
 
     # defining Fisher_Stability function, generates self.deltas
     def Fisher_Stability(self):
